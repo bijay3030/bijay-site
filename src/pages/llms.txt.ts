@@ -1,7 +1,7 @@
 // A plain-text version of the page for AI assistants and anyone who prefers text.
 import type { APIRoute } from 'astro';
 import { url } from '../utils/url';
-import { profile, about, projects, openSource, experience, principles, skills } from '../data/site';
+import { profile, about, projects, openSource, experience, principles, skills, faqs } from '../data/site';
 
 export const GET: APIRoute = ({ site }) => {
   const lines = [
@@ -46,6 +46,9 @@ export const GET: APIRoute = ({ site }) => {
     '',
     ...skills.map((s) => `- ${s.group}: ${s.items.join(', ')}`),
     '',
+    '## Frequently asked questions',
+    '',
+    ...faqs.flatMap((f) => [`### ${f.q}`, '', f.a, '']),
   ];
   return new Response(lines.join('\n'), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 };

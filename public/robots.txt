@@ -1,2 +1,6 @@
+# Crawlers read robots.txt only at the domain root (bijay3030.github.io/robots.txt),
+# so this file is informational. Everything here may be crawled.
 User-agent: *
 Allow: /
+
+Sitemap: https://bijay3030.github.io/bijay-site/sitemap-index.xml

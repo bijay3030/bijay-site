@@ -36,6 +36,8 @@ const updated = new Date().toLocaleDateString('en-US', { month: 'long', year: 'n
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" type="text/plain" href={url('llms.txt')} title="Plain-text summary" />
+    <link rel="sitemap" href={url('sitemap-index.xml')} />
+    <slot name="head" />
   </head>
   <body>
     <div class="page">
