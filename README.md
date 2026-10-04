@@ -17,6 +17,8 @@ Personal site for Bijay Subedi. One page, built with Astro, and designed so ever
 | Case studies | `src/data/site.ts` → `projects` |
 | Experience, open source, principles, toolkit | `src/data/site.ts` |
 | Blog posts | `src/content/writing/*.md` (set `draft: false` to publish) |
+| Testimonials | `src/data/site.ts` → `testimonials` (entries with `sample: true` show only in `npm run dev`) |
+| Architecture diagrams | `architecture` on each project in `src/data/site.ts` |
 | Portrait | `src/assets/portrait.jpg` |
 | Résumé | `public/resume.pdf` |
 
