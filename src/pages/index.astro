@@ -6,6 +6,7 @@ import Base from '../layouts/Base.astro';
 import Section from '../components/Section.astro';
 import Project from '../components/Project.astro';
 import Clock from '../components/Clock.astro';
+import StructuredData from '../components/StructuredData.astro';
 import portrait from '../assets/portrait.jpg';
 import {
   profile,
@@ -16,6 +17,7 @@ import {
   experience,
   principles,
   skills,
+  faqs,
 } from '../data/site';
 
 const posts = (await getCollection('writing')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -29,6 +31,7 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
 ---
 
 <Base>
+  <StructuredData slot="head" />
   <header class="frame intro">
     <div class="margin"></div>
     <div>
@@ -166,6 +169,19 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
             <div>
               <dt class="label">{s.group}</dt>
               <dd>{s.items.join(', ')}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </Section>
+
+    <Section id="faq" n={8} title="Quick answers" teaser={`${faqs.length} questions`} i={11}>
+      <dl class="faq">
+        {
+          faqs.map((f) => (
+            <div>
+              <dt>{f.q}</dt>
+              <dd>{f.a}</dd>
             </div>
           ))
         }
@@ -399,6 +415,28 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
   }
   .skills dd {
     margin: 0;
+  }
+
+  .faq {
+    margin: 0;
+  }
+  .faq div {
+    padding: 0.85rem 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .faq div:first-child {
+    padding-top: 0;
+  }
+  .faq div:last-child {
+    border-bottom: 0;
+  }
+  .faq dt {
+    font-style: italic;
+    font-weight: 500;
+  }
+  .faq dd {
+    margin: 0.2rem 0 0;
+    color: var(--ink-soft);
   }
 
   .contact > div:last-child {

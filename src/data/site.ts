@@ -3,6 +3,8 @@
 export const profile = {
   name: 'Bijay Subedi',
   role: 'Senior software engineer',
+  jobTitle: 'Senior Software Engineer',
+  employer: { name: 'Truemark', url: 'https://www.truemark.dev/' },
   location: 'Kathmandu, Nepal',
   timezone: 'Asia/Kathmandu',
   utcOffset: 'UTC+5:45',
@@ -231,4 +233,29 @@ export const skills = [
   { group: 'Frontend', items: ['React 18–19', 'TypeScript', 'Hotwire (Turbo + Stimulus)'] },
   { group: 'Infrastructure', items: ['AWS (EC2, S3, Lambda, RDS)', 'Docker', 'Kubernetes', 'GitLab CI', 'GitHub Actions'] },
   { group: 'Quality', items: ['RSpec', 'Jest', 'TDD', 'Code review & mentoring'] },
+];
+
+// Short, self-contained answers: each should make sense quoted on its own
+// in a search snippet or an AI-generated answer. Also published as FAQPage structured data.
+export const faqs = [
+  {
+    q: 'Who is Bijay Subedi?',
+    a: 'Bijay Subedi is a senior software engineer based in Kathmandu, Nepal, with 5+ years of experience building Ruby on Rails, React, and AWS applications. Bijay works at Truemark, building workflow and automation platforms for US clients.',
+  },
+  {
+    q: 'What does Bijay Subedi specialize in?',
+    a: 'Full-stack web applications with Ruby on Rails 7 and React: background processing with Sidekiq, real-time updates with ActionCable and Hotwire, PostgreSQL performance tuning, microservices on AWS, and CI/CD pipelines.',
+  },
+  {
+    q: 'What has Bijay Subedi built?',
+    a: 'Helios, a platform that runs medical translation projects from intake to delivery; Quoting, a versioned quote system for a healthcare localization company; and AListEngine, an AI tool that turns product photos into marketplace-ready listings.',
+  },
+  {
+    q: 'Does Bijay Subedi work remotely with US or European teams?',
+    a: `Yes. Bijay already works remotely with US clients through Truemark and is based in ${profile.location} (${profile.utcOffset}), with 4+ hours of overlap with US Eastern and a full EU workday. Bijay is open to senior full-time remote roles.`,
+  },
+  {
+    q: 'How can I contact Bijay Subedi?',
+    a: `Email ${profile.email}.`,
+  },
 ];
