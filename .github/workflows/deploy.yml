@@ -1,5 +1,7 @@
-name: Deploy to GitHub Pages
+name: Deploy redirect to GitHub Pages
 
+# The site moved to https://bijay3030.github.io (source: bijay3030/bijay3030.github.io).
+# This publishes only a redirect, so old /bijay-site/ links keep working.
 on:
   push:
     branches: [main]
@@ -15,18 +17,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: withastro/action@v4
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: redirect
       - id: deployment
         uses: actions/deploy-pages@v4

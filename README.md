@@ -1,5 +1,7 @@
 # bijay-site
 
+> **Moved.** This site now lives in [bijay3030/bijay3030.github.io](https://github.com/bijay3030/bijay3030.github.io) and is served at https://bijay3030.github.io. This repository is archived; its Pages deployment only redirects `/bijay-site/` to the new address.
+
 Personal site for Bijay Subedi. One page, built with Astro, and designed so every element has a reason to be there.
 
 ## The idea
