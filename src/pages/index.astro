@@ -83,7 +83,6 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
     </Section>
 
     <Section id="work" n={2} title="Selected work" teaser={`${projects.length} case studies`} open i={6}>
-      <p class="lede muted">Each one in a sentence. Open any of them for the problem, the decisions, and what changed.</p>
       {projects.map((p, i) => <Project project={p} index={i} />)}
     </Section>
 
