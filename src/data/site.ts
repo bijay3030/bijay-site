@@ -37,6 +37,17 @@ export const numbers = [
   { value: '3', label: 'junior engineers mentored' },
 ];
 
+export type Architecture = {
+  tiers: {
+    label: string;
+    // What travels from the tier above into this one.
+    via?: string;
+    core?: boolean;
+    nodes: { name: string; note: string }[];
+  }[];
+  caption: string;
+};
+
 export type Project = {
   id: string;
   name: string;
@@ -44,11 +55,14 @@ export type Project = {
   summary: string;
   before: string;
   after: string;
+  // Small facts about size and reach, shown under the one-line summary.
+  scale: string[];
   flow: string[];
   client: string;
   role: string;
   contribution: string[];
   problem: string;
+  architecture: Architecture;
   built: string[];
   decisions: { title: string; body: string }[];
   results: string[];
@@ -65,6 +79,7 @@ export const projects: Project[] = [
       'A workflow platform that runs medical translation projects end to end — from file intake to vendor coordination, delivery, and invoicing.',
     before: 'Email threads and spreadsheets',
     after: 'One auditable workflow',
+    scale: ['~20 files per project', '4–5 language pairs each', 'up to ~100 file × language tasks to track'],
     flow: ['Intake', 'Validate', 'Price', 'Route to vendors', 'Deliver', 'Invoice'],
     client: 'US healthcare localization provider (under NDA)',
     role: 'Full-stack engineer, Rails + React',
@@ -74,7 +89,48 @@ export const projects: Project[] = [
       'Live job status with ActionCable; role-based access with Pundit',
     ],
     problem:
-      'Medical translation jobs pass through many hands: upload, file checks, pricing, a vendor per language pair, tracking, delivery, invoicing. Most of that coordination lived in email and spreadsheets — slow to turn around, easy to lose a file or a deadline, and hard to prove who did what to clients who expect a clean audit trail.',
+      'A typical project arrives with around 20 source files that must go into 4 or 5 languages — so one project becomes up to a hundred file-and-language pieces of work, each with a vendor, a deadline, and a delivery. That coordination lived in email and spreadsheets: slow to turn around, easy to lose a file or a deadline, and hard to prove who did what to clients who expect a clean audit trail.',
+    architecture: {
+      tiers: [
+        {
+          label: 'Who uses it',
+          nodes: [
+            { name: 'Clients', note: 'upload source files, receive delivery' },
+            { name: 'Project managers', note: 'price, assign, track' },
+            { name: 'Vendors', note: 'one per language pair' },
+          ],
+        },
+        {
+          label: 'Rails 7 + React app',
+          via: 'HTTPS · every action checked by Pundit policies',
+          core: true,
+          nodes: [
+            { name: 'Intake', note: 'files to S3, job record created' },
+            { name: 'Job workflow', note: 'intake → … → invoice' },
+            { name: 'PM dashboards', note: 'React, live status' },
+          ],
+        },
+        {
+          label: 'Background work · Sidekiq',
+          via: 'enqueue — the request returns immediately',
+          nodes: [
+            { name: 'Validate files', note: 'bad or missing files caught at the door' },
+            { name: 'Split by language pair', note: '~20 files × 4–5 pairs' },
+            { name: 'Generate documents', note: 'pricing, work orders, invoices' },
+          ],
+        },
+        {
+          label: 'State & real-time',
+          via: 'store · broadcast',
+          nodes: [
+            { name: 'Database', note: 'jobs, assignments, audit history' },
+            { name: 'AWS S3', note: 'source and delivered files' },
+            { name: 'ActionCable', note: 'pushes status to open dashboards' },
+          ],
+        },
+      ],
+      caption: 'Simplified. Client systems and names omitted (NDA).',
+    },
     built: [
       'Uploads land in S3 and are checked by background jobs before anyone touches them.',
       'Jobs split by language pair; pricing and turnaround are calculated, not typed.',
@@ -102,6 +158,7 @@ export const projects: Project[] = [
       'A quote-management platform that turns a translation request into an accurate, versioned price quote — and hands approved quotes straight to delivery.',
     before: 'A spreadsheet per project manager',
     after: 'Shared rules, every revision kept',
+    scale: ['more files per project than Helios', 'large worksheets that differ by project type', 'every revision kept'],
     flow: ['Request in', 'Worksheet estimate', 'Edit line items', 'New version', 'Approve', 'Hand to delivery'],
     client: 'US healthcare localization provider (under NDA)',
     role: 'Full-stack engineer, Rails + React',
@@ -111,17 +168,56 @@ export const projects: Project[] = [
       'Intake from external systems in; approved quotes out to delivery',
     ],
     problem:
-      'Pricing a translation job depends on files, word counts, language pairs, schedule, and rules that differ by client. Those rules lived in individual spreadsheets: quotes were slow, two PMs could price the same job differently, and when a client asked for a change there was no reliable record of the previous quote.',
+      'Pricing a translation job depends on files, word counts, language pairs, schedule, and rules that differ by client. Quoting handles even more files per project than Helios, and each project type has its own large worksheet of rules. Those worksheets lived in individual spreadsheets: quotes were slow, two PMs could price the same job differently, and when a client asked for a change there was no reliable record of the previous quote.',
+    architecture: {
+      tiers: [
+        {
+          label: 'Inputs',
+          nodes: [
+            { name: 'External intake systems', note: 'requests, file lists, word-count logs' },
+            { name: 'Project managers', note: 'review and adjust quotes' },
+          ],
+        },
+        {
+          label: 'Rails 7 API + React 18 editor',
+          via: 'Rails API · Pundit decides who can view, edit, approve',
+          core: true,
+          nodes: [
+            { name: 'Intake API', note: 'normalises incoming requests' },
+            { name: 'Worksheet rules', note: 'per project type; data, not code' },
+            { name: 'Quote editor', note: 'line items per language pair' },
+          ],
+        },
+        {
+          label: 'State & real-time',
+          via: 'every save writes a new version',
+          nodes: [
+            { name: 'PostgreSQL', note: 'immutable quote versions, rules' },
+            { name: 'AWS S3', note: 'file lists, word-count logs' },
+            { name: 'ActionCable', note: 'live co-editing of one quote' },
+          ],
+        },
+        {
+          label: 'Downstream',
+          via: 'approved quote hands off',
+          nodes: [
+            { name: 'Approval', note: 'submit or reject, with history' },
+            { name: 'Delivery workflow', note: 'approved work starts here' },
+          ],
+        },
+      ],
+      caption: 'Simplified. Client systems and names omitted (NDA).',
+    },
     built: [
       'Requests arrive from external intake systems through a Rails API, with file lists and word-count logs in S3.',
-      'Shared worksheet rules calculate the first draft of every quote.',
+      'Shared worksheet rules — one large set per project type — calculate the first draft of every quote.',
       'PMs adjust line items per language pair; others viewing the quote see changes live.',
       'Every change creates a new version that can be compared or restored.',
       'Quotes are submitted or rejected; approved ones flow into delivery.',
     ],
     decisions: [
       { title: 'Immutable versions, not edits in place', body: 'Each revision is a new row, so history, comparisons, and client disputes are straightforward.' },
-      { title: 'Pricing rules as data, not code', body: 'Worksheet rules change per client without a deploy.' },
+      { title: 'Pricing rules as data, not code', body: 'Worksheets change per client and project type without a deploy.' },
       { title: 'Real-time only where it matters', body: 'ActionCable is used on the quote editor, where several people work on one quote at once — nowhere else.' },
     ],
     results: [
@@ -133,14 +229,15 @@ export const projects: Project[] = [
   },
   {
     id: 'alistengine',
-    name: 'AListEngine',
-    domain: 'AI listing automation',
+    name: 'aListEngine',
+    domain: 'AI cataloging for auctions',
     summary:
-      'An AI tool that turns product photos into ready-to-publish listings for e-commerce stores and auction houses.',
+      'AI cataloging software for auctioneers and resellers: photograph items, get drafted titles, descriptions, condition notes, and prices, then export to the auction platforms they already use.',
     before: 'Hours of writing per batch',
     after: 'Minutes, reviewed by a person',
-    flow: ['Photos', 'AI draft', 'Seller rules', 'Human review', 'Export'],
-    client: 'E-commerce sellers and auction houses',
+    scale: ['live product', 'hundreds of photos per batch', '10 export platforms', 'iOS + Android capture'],
+    flow: ['Capture', 'Split into lots', 'AI draft', 'Team review', 'Export'],
+    client: 'Auctioneers, estate-sale teams, and resellers',
     role: 'Full-stack engineer, Rails + React',
     contribution: [
       'The photo-to-draft pipeline calling AI vision and text models',
@@ -148,12 +245,50 @@ export const projects: Project[] = [
       'Exports to Shopify, AuctionFlex, and LiveAuctioneers',
     ],
     problem:
-      'Auction houses list hundreds of one-off items — antiques, collectibles, second-hand goods. Each needs a good title, a detailed description, item specifics, and a sensible starting price, in a slightly different format for every marketplace. By hand it took hours per batch, and quality depended on who wrote it.',
+      'Auction houses and estate-sale teams catalog hundreds of one-off items at a time — antiques, collectibles, equipment, household goods. Each lot needs a good title, a description, condition notes, and a sensible price, in a slightly different format for every auction platform. By hand it took hours per batch, and quality depended on who wrote it.',
+    architecture: {
+      tiers: [
+        {
+          label: 'Capture',
+          nodes: [
+            { name: 'Mobile app', note: 'bulk photos in the field, iOS + Android' },
+            { name: 'Web workspace', note: 'folders per sale, team roles' },
+          ],
+        },
+        {
+          label: 'Rails + React platform',
+          via: 'photo batches sync to the workspace',
+          core: true,
+          nodes: [
+            { name: 'Lot splitting', note: 'barcodes group photos, duplicates removed' },
+            { name: 'AI drafting', note: 'vision + text models; 4 analysis depths' },
+            { name: 'Rules engine', note: 'org/folder instructions, field rules' },
+          ],
+        },
+        {
+          label: 'Human review',
+          via: 'draft + confidence notes',
+          nodes: [
+            { name: 'Edit & approve', note: 'every field editable; flags what photos can’t confirm' },
+          ],
+        },
+        {
+          label: 'Export layer · one adapter per platform',
+          via: 'approved lots only',
+          nodes: [
+            { name: 'Auction platforms', note: 'HiBid, K-Bid, AuctionFlex, LiveAuctioneers, BidWrangler +3' },
+            { name: 'Retail', note: 'Shopify, eBay (beta)' },
+          ],
+        },
+      ],
+      caption: 'Simplified, from the public product and my part of it.',
+    },
     built: [
-      'Sellers upload photos with a category and their own required fields.',
-      'Vision and text models identify the item and draft title, description, specifics, and a starting price.',
-      'A rules engine applies seller fields and each marketplace’s format.',
-      'The seller edits and approves, then exports.',
+      'Teams capture photos on their phones and import hundreds at a time; barcodes split them into lots and duplicates are caught.',
+      'Vision and text models identify each item and draft the title, description, condition notes, and a suggested price — at quick, standard, enhanced, or thorough depth.',
+      'The draft says what it isn’t sure about and which extra photo or detail would help.',
+      'A rules engine applies organization and folder instructions, pricing strategy (auction or retail), and each platform’s format.',
+      'The team reviews and approves, then exports files ready for HiBid, K-Bid, AuctionMethod, AuctionFlex, BidWrangler, Equip-Bid, LiveAuctioneers, EstateSales.NET, Shopify, or eBay.',
     ],
     decisions: [
       { title: 'The AI drafts, a person approves', body: 'Nothing is exported without review — quality stays high and mistakes stay cheap.' },
@@ -163,9 +298,10 @@ export const projects: Project[] = [
     results: [
       'Listing creation dropped from hours to minutes.',
       'More consistent quality across sellers and channels.',
-      'Far more items listed per day.',
+      'Live as a paid product, with a free tier and 14-day trials.',
     ],
-    stack: ['Rails', 'React', 'AI vision + text', 'Rules engine', 'Shopify', 'AuctionFlex', 'LiveAuctioneers'],
+    stack: ['Rails', 'React', 'AI vision + text', 'Rules engine', 'iOS + Android', 'Shopify', 'AuctionFlex', 'LiveAuctioneers'],
+    href: 'https://alistengine.com/',
   },
 ];
 
@@ -227,7 +363,7 @@ export const principles = [
   { title: 'Keep every version.', body: 'Edits create new records, so history is a query, not an argument.', from: 'Quoting' },
   { title: 'Rules are data.', body: 'If a business rule changes per client, it shouldn’t need a deploy.', from: 'Quoting' },
   { title: 'Push, don’t poll — where it matters.', body: 'Real-time only on the screens where people actually collaborate.', from: 'Helios · Quoting' },
-  { title: 'The AI drafts, a person approves.', body: 'Models are fast and fallible; review keeps mistakes cheap.', from: 'AListEngine' },
+  { title: 'The AI drafts, a person approves.', body: 'Models are fast and fallible; review keeps mistakes cheap.', from: 'aListEngine' },
   { title: 'One place for permissions.', body: 'Authorization as policies, not checks scattered across controllers.', from: 'Helios' },
 ];
 
@@ -251,7 +387,7 @@ export const faqs = [
   },
   {
     q: 'What has Bijay Subedi built?',
-    a: 'Helios, a platform that runs medical translation projects from intake to delivery; Quoting, a versioned quote system for a healthcare localization company; and AListEngine, an AI tool that turns product photos into marketplace-ready listings.',
+    a: 'Helios, a platform that runs medical translation projects from intake to delivery; Quoting, a versioned quote system for a healthcare localization company; and aListEngine (alistengine.com), AI cataloging software that turns item photos into auction-ready listings.',
   },
   {
     q: 'Does Bijay Subedi work remotely with US or European teams?',
@@ -260,5 +396,42 @@ export const faqs = [
   {
     q: 'How can I contact Bijay Subedi?',
     a: `Email ${profile.email}.`,
+  },
+];
+
+// What people say. `sample: true` entries are placeholders that show only in `npm run dev`
+// (with a SAMPLE badge) and are never built into the live site. To publish one: paste the
+// person's real words, get their OK to use their name, and delete `sample: true`.
+export const testimonials: {
+  quote: string;
+  name: string;
+  title: string;
+  relationship: string;
+  href?: string;
+  sample?: boolean;
+}[] = [
+  {
+    quote:
+      'Bijay took our quoting process from a pile of spreadsheets to a system our PMs trust. He asks the right questions about the business before writing code, and he ships carefully.',
+    name: 'Name Surname',
+    title: 'Engineering Manager, Truemark',
+    relationship: 'Managed Bijay on Quoting',
+    sample: true,
+  },
+  {
+    quote:
+      'Our project managers used to chase files over email. With Helios they open one screen and see where every language pair stands. Bijay was the engineer we went to when something had to be right.',
+    name: 'Name Surname',
+    title: 'Operations Lead, US healthcare localization client',
+    relationship: 'Client stakeholder on Helios',
+    sample: true,
+  },
+  {
+    quote:
+      'Bijay’s code reviews made me a better Rails developer. He explains the why, not just the fix.',
+    name: 'Name Surname',
+    title: 'Software Engineer, Truemark',
+    relationship: 'Mentored by Bijay',
+    sample: true,
   },
 ];

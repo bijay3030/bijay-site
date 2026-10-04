@@ -1,6 +1,7 @@
 ---
 // A case study that reads in one line and opens into the full story.
 import type { Project } from '../data/site';
+import Architecture from './Architecture.astro';
 
 interface Props {
   project: Project;
@@ -23,6 +24,7 @@ const { project: p, index } = Astro.props;
       <span class="arrow" aria-label="became">→</span>
       <span class="after">{p.after}</span>
     </span>
+    <span class="scale mono">{p.scale.join(' · ')}</span>
     <span class="more mono" aria-hidden="true"><span class="closed">Read the case study</span><span class="opened">Close</span></span>
   </summary>
 
@@ -34,10 +36,23 @@ const { project: p, index } = Astro.props;
     <dl class="meta mono">
       <div><dt class="label">Client</dt><dd>{p.client}</dd></div>
       <div><dt class="label">Role</dt><dd>{p.role}</dd></div>
+      {
+        p.href && (
+          <div>
+            <dt class="label">Live</dt>
+            <dd>
+              <a href={p.href}>{new URL(p.href).host} ↗</a>
+            </dd>
+          </div>
+        )
+      }
     </dl>
 
     <h4 class="label">The problem</h4>
     <p>{p.problem}</p>
+
+    <h4 class="label">How it fits together</h4>
+    <Architecture arch={p.architecture} name={p.name} />
 
     <h4 class="label">What it does</h4>
     <ul class="list">{p.built.map((b) => <li>{b}</li>)}</ul>
@@ -96,7 +111,8 @@ const { project: p, index } = Astro.props;
     margin-left: auto;
   }
   .summary,
-  .shift {
+  .shift,
+  .scale {
     display: block;
   }
   .summary {
@@ -105,6 +121,10 @@ const { project: p, index } = Astro.props;
   }
   .shift {
     margin: 0 0 0.6rem;
+    color: var(--muted);
+  }
+  .scale {
+    margin: -0.3rem 0 0.6rem;
     color: var(--muted);
   }
   .shift s {
@@ -171,7 +191,7 @@ const { project: p, index } = Astro.props;
 
   .meta {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
     gap: 1rem;
     margin: 0 0 1.75rem;
     padding: 0.9rem 0;
