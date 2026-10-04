@@ -18,6 +18,7 @@ import {
   principles,
   skills,
   faqs,
+  education,
 } from '../data/site';
 
 const posts = (await getCollection('writing')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -59,6 +60,10 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
   </header>
 
   <main>
+    <div class="frame toolbar">
+      <div class="margin"></div>
+      <div><button type="button" class="toggle-all mono" aria-controls="about work principles experience open-source writing skills faq">Expand all</button></div>
+    </div>
     <Section id="about" n={1} title="About" teaser="5+ years · Rails, React, AWS" open i={5}>
       {about.map((p) => <p>{p}</p>)}
       <ul class="numbers">
@@ -92,7 +97,7 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
       </ol>
     </Section>
 
-    <Section id="experience" n={4} title="Experience" teaser="Truemark · 2021 — now" i={8}>
+    <Section id="experience" n={4} title="Experience" teaser="Truemark · 2021 — now" open i={8}>
       {
         experience.map((job) => (
           <article class="job">
@@ -111,6 +116,16 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
           </article>
         ))
       }
+      <div class="education">
+        <span class="label">Education</span>
+        {
+          education.map((e) => (
+            <p>
+              {e.degree}, {e.school} <span class="label">{e.years}</span>
+            </p>
+          ))
+        }
+      </div>
     </Section>
 
     <Section id="open-source" n={5} title="Open source" teaser="Built in public" i={9}>
@@ -202,6 +217,20 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
 </Base>
 
 <script>
+  // One switch for readers who'd rather see everything at once.
+  const toggleAll = document.querySelector<HTMLButtonElement>('.toggle-all');
+  const chapters = () => [...document.querySelectorAll<HTMLDetailsElement>('main details')];
+  const syncLabel = () => {
+    if (toggleAll) toggleAll.textContent = chapters().every((d) => d.open) ? 'Collapse all' : 'Expand all';
+  };
+  toggleAll?.addEventListener('click', () => {
+    const open = !chapters().every((d) => d.open);
+    chapters().forEach((d) => (d.open = open));
+    syncLabel();
+  });
+  chapters().forEach((d) => d.addEventListener('toggle', syncLabel));
+  syncLabel();
+
   document.querySelectorAll<HTMLButtonElement>('button.copy').forEach((btn) => {
     const label = btn.querySelector<HTMLElement>('[data-label]')!;
     btn.addEventListener('click', async () => {
@@ -278,6 +307,38 @@ const fmtDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', yea
   }
   .copy:hover {
     text-decoration-color: var(--accent);
+  }
+
+  .toolbar > div:last-child {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.4rem;
+  }
+  .toggle-all {
+    font: inherit;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    padding: 0.25rem 0;
+    cursor: pointer;
+  }
+  .toggle-all:hover {
+    color: var(--accent);
+  }
+  .education {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--rule);
+  }
+  .education p {
+    margin: 0.3rem 0 0;
+  }
+  .education p .label {
+    margin-left: 0.4rem;
   }
 
   .lede {

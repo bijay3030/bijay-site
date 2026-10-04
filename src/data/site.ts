@@ -18,7 +18,6 @@ export const profile = {
   links: [
     { label: 'GitHub', href: 'https://github.com/bijay3030' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/bijay-p-subedi/' },
-    { label: 'LeetCode', href: 'https://leetcode.com/u/stanbj3030/' },
   ],
 };
 
@@ -216,6 +215,10 @@ export const experience = [
       'Helped the team adopt Scrum and kept technical documentation current.',
     ],
   },
+];
+
+export const education = [
+  { degree: 'B.Tech, Computer Science', school: 'Maharshi Dayanand University', years: '2016 — 2020' },
 ];
 
 // How I work — each principle is backed by a project above.

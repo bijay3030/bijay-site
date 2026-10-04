@@ -9,7 +9,7 @@
   --paper-deep: #ebe5d6;
   --ink: #1d1b16;
   --ink-soft: #3f3b32;
-  --muted: #7a7466;
+  --muted: #6b6557; /* 5.1:1 on paper — passes WCAG AA for small text */
   --rule: #d8d0bd;
   --accent: #b23a24; /* sindoor red — used sparingly, only where it means something */
 
